@@ -240,7 +240,7 @@ config_import() {
 			mv "${CONFIG_FILE}.backup" "$CONFIG_FILE"
 		fi
 		return 1
-	fi
+	}
 	
 	chmod 600 "$CONFIG_FILE"
 	log_success "配置导入成功 / Configuration imported successfully"
