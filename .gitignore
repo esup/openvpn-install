@@ -1,0 +1,25 @@
+# Log files
+*.log
+openvpn-install.log
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# Test artifacts
+test/output/
+*.ovpn
+
+# Build artifacts
+dist/
+build/
