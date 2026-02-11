@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # OpenVPN 安装脚本 - 服务器管理模块
 # OpenVPN Install - Server Management Module
 # 服务器状态、证书更新等操作
 # Server status, certificate renewal operations
+
+# 避免重复加载 / Avoid duplicate loading
+[[ -n "${_SERVER_MODULE_LOADED:-}" ]] && return 0
+readonly _SERVER_MODULE_LOADED=1
 
 # 此模块依赖 / This module depends on:
 # - lib/logging.sh
@@ -101,7 +105,7 @@ server_show_connections() {
 	local client_count=0
 	
 	# 提取客户端连接信息 / Extract client connection information
-	while IFS=',' read -r name real_address virtual_address bytes_received bytes_sent connected_since; do
+	while IFS=',' read -r name real_address virtual_address _bytes_received _bytes_sent _connected_since; do
 		# 跳过标题行 / Skip header lines
 		[[ "$name" == "Common Name" ]] && continue
 		[[ "$name" == "ROUTING TABLE" ]] && break
@@ -325,7 +329,7 @@ server_statistics() {
 		local total_bytes_in=0
 		local total_bytes_out=0
 		
-		while IFS=',' read -r name addr vaddr bytes_in bytes_out time; do
+		while IFS=',' read -r name _addr _vaddr bytes_in bytes_out _time; do
 			[[ "$name" == "Common Name" ]] && continue
 			[[ "$name" == "ROUTING TABLE" ]] && break
 			

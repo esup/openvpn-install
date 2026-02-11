@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # OpenVPN 安装脚本 - 日志库
 # OpenVPN Install - Logging Library
 # 提取的可重用日志功能模块
 # Extracted logging functions for reusability
+
+# 避免重复加载 / Avoid duplicate loading
+[[ -n "${_LOGGING_LIB_LOADED:-}" ]] && return 0
+readonly _LOGGING_LIB_LOADED=1
 
 # =============================================================================
 # 日志配置 / Logging Configuration

@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # OpenVPN 安装脚本 - 证书管理库
 # OpenVPN Install - Certificate Authority Library
 # PKI 和证书管理（基于 Easy-RSA）
 # PKI and certificate management (based on Easy-RSA)
+
+# 避免重复加载 / Avoid duplicate loading
+[[ -n "${_CA_LIB_LOADED:-}" ]] && return 0
+readonly _CA_LIB_LOADED=1
 
 # =============================================================================
 # Easy-RSA 配置 / Easy-RSA Configuration

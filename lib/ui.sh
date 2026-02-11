@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # OpenVPN 安装脚本 - 用户界面库
 # OpenVPN Install - User Interface Library
 # 交互式提示和菜单系统
 # Interactive prompts and menu system
+
+# 避免重复加载 / Avoid duplicate loading
+[[ -n "${_UI_LIB_LOADED:-}" ]] && return 0
+readonly _UI_LIB_LOADED=1
 
 # =============================================================================
 # 通用输入函数 / Generic Input Functions

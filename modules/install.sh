@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # OpenVPN 安装脚本 - 安装模块
 # OpenVPN Install - Installation Module
 # OpenVPN 服务器初始安装和配置
 # OpenVPN server initial installation and configuration
+
+# 避免重复加载 / Avoid duplicate loading
+[[ -n "${_INSTALL_MODULE_LOADED:-}" ]] && return 0
+readonly _INSTALL_MODULE_LOADED=1
 
 # 此模块依赖 / This module depends on:
 # - lib/logging.sh

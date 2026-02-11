@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC1091,SC2034
 # OpenVPN Install - Refactored Main Script
 # This demonstrates the proposed modular architecture
@@ -19,7 +19,8 @@ NON_INTERACTIVE_INSTALL=${NON_INTERACTIVE_INSTALL:-n}
 # =============================================================================
 # Script Metadata
 # =============================================================================
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR
 readonly SCRIPT_NAME="openvpn-install-refactored"
 readonly VERSION="2.0.0-beta"
 

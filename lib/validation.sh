@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # OpenVPN 安装脚本 - 验证库
 # OpenVPN Install - Validation Library
 # 输入验证和消毒函数
 # Input validation and sanitization functions
+
+# 避免重复加载 / Avoid duplicate loading
+[[ -n "${_VALIDATION_LIB_LOADED:-}" ]] && return 0
+readonly _VALIDATION_LIB_LOADED=1
 
 # =============================================================================
 # 客户端和用户输入验证 / Client and User Input Validation

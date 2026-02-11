@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # OpenVPN 安装脚本 - 卸载模块
 # OpenVPN Install - Uninstall Module
 # 完全移除 OpenVPN 和相关配置
 # Complete removal of OpenVPN and related configuration
+
+# 避免重复加载 / Avoid duplicate loading
+[[ -n "${_UNINSTALL_MODULE_LOADED:-}" ]] && return 0
+readonly _UNINSTALL_MODULE_LOADED=1
 
 # 此模块依赖 / This module depends on:
 # - lib/logging.sh

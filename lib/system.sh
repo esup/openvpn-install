@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # OpenVPN 安装脚本 - 系统库
 # OpenVPN Install - System Library
 # 系统检测和网络工具
 # System detection and network utilities
+
+# 避免重复加载 / Avoid duplicate loading
+[[ -n "${_SYSTEM_LIB_LOADED:-}" ]] && return 0
+readonly _SYSTEM_LIB_LOADED=1
 
 # =============================================================================
 # 操作系统检测 / Operating System Detection

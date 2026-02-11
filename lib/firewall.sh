@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # OpenVPN 安装脚本 - 防火墙管理库
 # OpenVPN Install - Firewall Management Library
 # 防火墙规则管理（firewalld、nftables、iptables）
 # Firewall rules management (firewalld, nftables, iptables)
+
+# 避免重复加载 / Avoid duplicate loading
+[[ -n "${_FIREWALL_LIB_LOADED:-}" ]] && return 0
+readonly _FIREWALL_LIB_LOADED=1
 
 # =============================================================================
 # 防火墙检测 / Firewall Detection

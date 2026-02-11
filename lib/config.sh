@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # OpenVPN 安装脚本 - 配置管理库
 # OpenVPN Install - Configuration Management Library
 # 配置文件管理和持久化
 # Configuration file management and persistence
+
+# 避免重复加载 / Avoid duplicate loading
+[[ -n "${_CONFIG_LIB_LOADED:-}" ]] && return 0
+readonly _CONFIG_LIB_LOADED=1
 
 # =============================================================================
 # 配置文件路径 / Configuration File Paths

@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # OpenVPN 安装脚本 - 客户端管理模块
 # OpenVPN Install - Client Management Module
 # 客户端添加、删除、列表、更新等操作
 # Client add, remove, list, renew operations
+
+# 避免重复加载 / Avoid duplicate loading
+[[ -n "${_CLIENT_MODULE_LOADED:-}" ]] && return 0
+readonly _CLIENT_MODULE_LOADED=1
 
 # 此模块依赖 / This module depends on:
 # - lib/logging.sh
