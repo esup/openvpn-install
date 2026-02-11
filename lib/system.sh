@@ -163,40 +163,43 @@ check_root() {
 	if [[ $EUID -ne 0 ]]; then
 		log_fatal "此脚本必须以 root 身份运行 / This script must be run as root"
 	fi
-	log_debug "Running as root: OK"
+	log_debug "以 root 身份运行 / Running as root: OK"
 }
 
+# 检查 TUN 模块是否可用
 # Check if TUN module is available
-# Returns: 0 if available, 1 if not
+# 返回 / Returns: 可用返回 0，不可用返回 1 / 0 if available, 1 if not
 check_tun_module() {
 	if [[ ! -e /dev/net/tun ]] || ! (exec 7<>/dev/net/tun) 2>/dev/null; then
-		log_error "TUN module is not available"
-		log_error "Please enable TUN in your VPS/kernel configuration"
+		log_error "TUN 模块不可用 / TUN module is not available"
+		log_error "请在您的 VPS/内核配置中启用 TUN / Please enable TUN in your VPS/kernel configuration"
 		return 1
 	fi
-	log_debug "TUN module: OK"
+	log_debug "TUN 模块 / TUN module: OK"
 	return 0
 }
 
+# 获取默认网络接口
 # Get default network interface
-# Returns: interface name on stdout
+# 返回 / Returns: 接口名称输出到 stdout / interface name on stdout
 get_default_interface() {
 	local interface
 	interface=$(ip route show default | awk '/default/ {print $5}' | head -n1)
 	
 	if [[ -z "$interface" ]]; then
-		log_warn "Could not determine default network interface"
+		log_warn "无法确定默认网络接口 / Could not determine default network interface"
 		return 1
 	fi
 	
-	log_debug "Default interface: $interface"
+	log_debug "默认接口 / Default interface: $interface"
 	echo "$interface"
 	return 0
 }
 
+# 获取默认接口的本地 IP 地址
 # Get local IP address of default interface
-# Args: $1 - IP version (4 or 6)
-# Returns: IP address on stdout
+# 参数 / Args: $1 - IP 版本 (4 或 6) / IP version (4 or 6)
+# 返回 / Returns: IP 地址输出到 stdout / IP address on stdout
 get_local_ip() {
 	local ip_version="$1"
 	local interface
@@ -214,46 +217,53 @@ get_local_ip() {
 			ip -6 addr show "$interface" | grep "inet6.*global" | awk '{print $2}' | cut -d/ -f1 | head -n1
 			;;
 		*)
-			log_error "Invalid IP version: $ip_version"
+			log_error "无效的 IP 版本 / Invalid IP version: $ip_version"
 			return 1
 			;;
 	esac
 }
 
+# 检查 IPv6 是否可用
 # Check if IPv6 is available
-# Returns: 0 if available, 1 if not
+# 返回 / Returns: 可用返回 0，不可用返回 1 / 0 if available, 1 if not
 check_ipv6_available() {
 	if [[ ! -f /proc/net/if_inet6 ]]; then
-		log_debug "IPv6 not available (no /proc/net/if_inet6)"
+		log_debug "IPv6 不可用（没有 /proc/net/if_inet6）/ IPv6 not available (no /proc/net/if_inet6)"
 		return 1
 	fi
 	
-	# Check if we can resolve an IPv6 address
+	# 检查是否能解析 IPv6 地址 / Check if we can resolve an IPv6 address
 	if ! resolve_public_ip 6 >/dev/null 2>&1; then
-		log_debug "IPv6 not available (cannot resolve public IPv6)"
+		log_debug "IPv6 不可用（无法解析公网 IPv6）/ IPv6 not available (cannot resolve public IPv6)"
 		return 1
 	fi
 	
-	log_debug "IPv6 available"
+	log_debug "IPv6 可用 / IPv6 available"
 	return 0
 }
 
+# 检查 systemd 是否可用
 # Check if systemd is available
-# Returns: 0 if available, exits with error if not
+# 返回 / Returns: 可用返回 0，不可用则退出并报错 / 0 if available, exits with error if not
 check_systemd() {
 	if ! command -v systemctl >/dev/null 2>&1; then
-		log_fatal "systemd is required but not found"
+		log_fatal "需要 systemd 但未找到 / systemd is required but not found"
 	fi
 	
 	if ! systemctl --version >/dev/null 2>&1; then
-		log_fatal "systemd is not working properly"
+		log_fatal "systemd 工作不正常 / systemd is not working properly"
 	fi
 	
 	log_debug "systemd: OK"
 }
 
+# =============================================================================
+# OpenVPN 版本检测 / OpenVPN Version Detection
+# =============================================================================
+
+# 获取 OpenVPN 版本
 # Get OpenVPN version
-# Returns: version string on stdout (e.g., "2.6.8")
+# 返回 / Returns: 版本字符串输出到 stdout（例如 "2.6.8"）/ version string on stdout (e.g., "2.6.8")
 get_openvpn_version() {
 	if ! command -v openvpn >/dev/null 2>&1; then
 		return 1
@@ -262,9 +272,10 @@ get_openvpn_version() {
 	openvpn --version 2>&1 | head -n1 | awk '{print $2}'
 }
 
+# 检查 OpenVPN 版本是否支持某个功能
 # Check if OpenVPN version supports a feature
-# Args: $1 - minimum version required (e.g., "2.6")
-# Returns: 0 if supported, 1 if not
+# 参数 / Args: $1 - 所需的最低版本（例如 "2.6"）/ minimum version required (e.g., "2.6")
+# 返回 / Returns: 支持返回 0，不支持返回 1 / 0 if supported, 1 if not
 check_openvpn_version() {
 	local min_version="$1"
 	local current_version
@@ -272,22 +283,29 @@ check_openvpn_version() {
 	current_version=$(get_openvpn_version)
 	
 	if [[ -z "$current_version" ]]; then
-		log_warn "OpenVPN not installed, cannot check version"
+		log_warn "OpenVPN 未安装，无法检查版本 / OpenVPN not installed, cannot check version"
 		return 1
 	fi
 	
+	# 简单的版本比较（适用于 major.minor）
 	# Simple version comparison (works for major.minor)
 	if [[ "$(printf '%s\n' "$min_version" "$current_version" | sort -V | head -n1)" == "$min_version" ]]; then
-		log_debug "OpenVPN version $current_version >= $min_version"
+		log_debug "OpenVPN 版本 / version $current_version >= $min_version"
 		return 0
 	else
-		log_debug "OpenVPN version $current_version < $min_version"
+		log_debug "OpenVPN 版本 / version $current_version < $min_version"
 		return 1
 	fi
 }
 
+# =============================================================================
+# 包管理器操作 / Package Manager Operations
+# =============================================================================
+
+# 获取包管理器命令
 # Get package manager command
-# Returns: package manager command on stdout (apt-get, dnf, yum, pacman, zypper)
+# 返回 / Returns: 包管理器命令输出到 stdout / package manager command on stdout
+#                 (apt-get, dnf, yum, pacman, zypper)
 get_package_manager() {
 	case "$OS" in
 		debian|ubuntu)
@@ -307,49 +325,51 @@ get_package_manager() {
 			echo "zypper"
 			;;
 		*)
-			log_error "Unknown package manager for OS: $OS"
+			log_error "未知的操作系统包管理器 / Unknown package manager for OS: $OS"
 			return 1
 			;;
 	esac
 }
 
+# 安装软件包
 # Install package(s)
-# Args: $@ - package names
-# Returns: 0 on success, 1 on failure
+# 参数 / Args: $@ - 软件包名称列表 / package names
+# 返回 / Returns: 成功返回 0，失败返回 1 / 0 on success, 1 on failure
 install_package() {
 	local packages=("$@")
 	local pm
 	pm=$(get_package_manager)
 	
-	log_info "Installing packages: ${packages[*]}"
+	log_info "正在安装软件包 / Installing packages: ${packages[*]}"
 	
 	case "$pm" in
 		apt-get)
-			run_cmd "Update package cache" apt-get update || return 1
-			run_cmd "Install packages" apt-get install -y "${packages[@]}" || return 1
+			run_cmd "更新软件包缓存 / Update package cache" apt-get update || return 1
+			run_cmd "安装软件包 / Install packages" apt-get install -y "${packages[@]}" || return 1
 			;;
 		dnf|yum)
-			run_cmd "Install packages" "$pm" install -y "${packages[@]}" || return 1
+			run_cmd "安装软件包 / Install packages" "$pm" install -y "${packages[@]}" || return 1
 			;;
 		pacman)
-			run_cmd "Install packages" pacman -Sy --noconfirm "${packages[@]}" || return 1
+			run_cmd "安装软件包 / Install packages" pacman -Sy --noconfirm "${packages[@]}" || return 1
 			;;
 		zypper)
-			run_cmd "Install packages" zypper install -y "${packages[@]}" || return 1
+			run_cmd "安装软件包 / Install packages" zypper install -y "${packages[@]}" || return 1
 			;;
 		*)
-			log_error "Cannot install packages: unknown package manager"
+			log_error "无法安装软件包：未知的包管理器 / Cannot install packages: unknown package manager"
 			return 1
 			;;
 	esac
 	
-	log_success "Packages installed successfully"
+	log_success "软件包安装成功 / Packages installed successfully"
 	return 0
 }
 
+# 检查软件包是否已安装
 # Check if a package is installed
-# Args: $1 - package name
-# Returns: 0 if installed, 1 if not
+# 参数 / Args: $1 - 软件包名称 / package name
+# 返回 / Returns: 已安装返回 0，未安装返回 1 / 0 if installed, 1 if not
 is_package_installed() {
 	local package="$1"
 	local pm
