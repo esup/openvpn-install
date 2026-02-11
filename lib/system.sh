@@ -1,71 +1,84 @@
 #!/bin/bash
+# OpenVPN 安装脚本 - 系统库
 # OpenVPN Install - System Library
+# 系统检测和网络工具
 # System detection and network utilities
 
+# =============================================================================
+# 操作系统检测 / Operating System Detection
+# =============================================================================
+
+# 检测操作系统
 # Detect operating system
-# Returns: Sets OS, VER, and ID global variables
+# 返回 / Returns: 设置全局变量 OS, VER / Sets OS, VER global variables
 detect_os() {
 	if [[ ! -e /etc/os-release ]]; then
-		log_fatal "/etc/os-release not found. Unsupported operating system."
+		log_fatal "未找到 /etc/os-release。不支持的操作系统 / /etc/os-release not found. Unsupported operating system."
 	fi
 	
+	# 读取系统信息（不使用 source 以避免只读变量冲突）
 	# Read OS information without sourcing to avoid readonly variable conflicts
 	OS=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
 	VER=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"' || echo "unknown")
 	
-	log_debug "Detected OS: $OS $VER"
+	log_debug "检测到操作系统 / Detected OS: $OS $VER"
 	
-	# Validate supported distributions
+	# 验证支持的发行版 / Validate supported distributions
 	case "$OS" in
 		debian)
 			if [[ "$VER" -lt 11 ]]; then
-				log_fatal "Debian 11 or higher is required"
+				log_fatal "需要 Debian 11 或更高版本 / Debian 11 or higher is required"
 			fi
 			;;
 		ubuntu)
 			if [[ "${VER//./}" -lt 1804 ]]; then
-				log_fatal "Ubuntu 18.04 or higher is required"
+				log_fatal "需要 Ubuntu 18.04 或更高版本 / Ubuntu 18.04 or higher is required"
 			fi
 			;;
 		fedora)
 			if [[ "$VER" -lt 40 ]]; then
-				log_fatal "Fedora 40 or higher is required"
+				log_fatal "需要 Fedora 40 或更高版本 / Fedora 40 or higher is required"
 			fi
 			;;
 		centos|rocky|almalinux|ol)
 			if [[ "$VER" -lt 8 ]]; then
-				log_fatal "Version 8 or higher is required"
+				log_fatal "需要版本 8 或更高 / Version 8 or higher is required"
 			fi
 			;;
 		amzn)
 			if [[ "$VER" != "2023" ]]; then
-				log_fatal "Only Amazon Linux 2023 is supported"
+				log_fatal "仅支持 Amazon Linux 2023 / Only Amazon Linux 2023 is supported"
 			fi
 			;;
 		arch|manjaro)
-			# Rolling release, no version check
+			# 滚动发布，无需版本检查 / Rolling release, no version check
 			;;
 		opensuse-leap|opensuse-tumbleweed)
-			# Supported
+			# 支持的发行版 / Supported
 			;;
 		*)
-			log_fatal "Unsupported operating system: $OS"
+			log_fatal "不支持的操作系统 / Unsupported operating system: $OS"
 			;;
 	esac
 }
 
+# =============================================================================
+# 网络工具 / Network Utilities
+# =============================================================================
+
+# 解析公网 IP 地址（IPv4 和 IPv6 统一接口）
 # Resolve public IP address (unified for IPv4 and IPv6)
-# Args: $1 - IP version (4 or 6)
-# Returns: IP address on stdout, or empty on failure
+# 参数 / Args: $1 - IP 版本 (4 或 6) / IP version (4 or 6)
+# 返回 / Returns: IP 地址输出到 stdout，失败时为空 / IP address on stdout, or empty on failure
 resolve_public_ip() {
 	local ip_version="$1"
 	local ip=""
 	
 	case "$ip_version" in
 		4)
-			log_debug "Resolving public IPv4 address"
+			log_debug "解析公网 IPv4 地址 / Resolving public IPv4 address"
 			
-			# Try multiple services
+			# 尝试多个服务 / Try multiple services
 			local ipv4_services=(
 				"https://api.ipify.org"
 				"https://ifconfig.me/ip"
@@ -73,34 +86,34 @@ resolve_public_ip() {
 			)
 			
 			for service in "${ipv4_services[@]}"; do
-				log_debug "Trying $service"
+				log_debug "尝试 / Trying $service"
 				ip=$(curl -4s --max-time 5 "$service" 2>/dev/null)
 				
 				if validate_ipv4 "$ip"; then
-					log_debug "Resolved IPv4: $ip"
+					log_debug "已解析 IPv4 / Resolved IPv4: $ip"
 					echo "$ip"
 					return 0
 				fi
 			done
 			
-			# Fallback to dig
-			log_debug "Falling back to dig for IPv4"
+			# 回退到 dig 命令 / Fallback to dig
+			log_debug "回退到 dig 命令解析 IPv4 / Falling back to dig for IPv4"
 			ip=$(dig +short myip.opendns.com @resolver1.opendns.com -4 2>/dev/null | head -n1)
 			
 			if validate_ipv4 "$ip"; then
-				log_debug "Resolved IPv4 via dig: $ip"
+				log_debug "通过 dig 解析到 IPv4 / Resolved IPv4 via dig: $ip"
 				echo "$ip"
 				return 0
 			fi
 			
-			log_warn "Failed to resolve public IPv4 address"
+			log_warn "无法解析公网 IPv4 地址 / Failed to resolve public IPv4 address"
 			return 1
 			;;
 			
 		6)
-			log_debug "Resolving public IPv6 address"
+			log_debug "解析公网 IPv6 地址 / Resolving public IPv6 address"
 			
-			# Try multiple services
+			# 尝试多个服务 / Try multiple services
 			local ipv6_services=(
 				"https://api6.ipify.org"
 				"https://ifconfig.me/ip"
@@ -108,42 +121,47 @@ resolve_public_ip() {
 			)
 			
 			for service in "${ipv6_services[@]}"; do
-				log_debug "Trying $service"
+				log_debug "尝试 / Trying $service"
 				ip=$(curl -6s --max-time 5 "$service" 2>/dev/null)
 				
 				if validate_ipv6 "$ip"; then
-					log_debug "Resolved IPv6: $ip"
+					log_debug "已解析 IPv6 / Resolved IPv6: $ip"
 					echo "$ip"
 					return 0
 				fi
 			done
 			
-			# Fallback to dig
-			log_debug "Falling back to dig for IPv6"
+			# 回退到 dig 命令 / Fallback to dig
+			log_debug "回退到 dig 命令解析 IPv6 / Falling back to dig for IPv6"
 			ip=$(dig +short myip.opendns.com @resolver1.opendns.com -6 AAAA 2>/dev/null | head -n1)
 			
 			if validate_ipv6 "$ip"; then
-				log_debug "Resolved IPv6 via dig: $ip"
+				log_debug "通过 dig 解析到 IPv6 / Resolved IPv6 via dig: $ip"
 				echo "$ip"
 				return 0
 			fi
 			
-			log_warn "Failed to resolve public IPv6 address"
+			log_warn "无法解析公网 IPv6 地址 / Failed to resolve public IPv6 address"
 			return 1
 			;;
 			
 		*)
-			log_error "Invalid IP version: $ip_version (must be 4 or 6)"
+			log_error "无效的 IP 版本 / Invalid IP version: $ip_version (必须是 4 或 6 / must be 4 or 6)"
 			return 1
 			;;
 	esac
 }
 
+# =============================================================================
+# 系统权限和环境检查 / System Permissions and Environment Checks
+# =============================================================================
+
+# 检查是否以 root 身份运行
 # Check if running as root
-# Returns: 0 if root, exits with error if not
+# 返回 / Returns: root 用户返回 0，否则退出并报错 / 0 if root, exits with error if not
 check_root() {
 	if [[ $EUID -ne 0 ]]; then
-		log_fatal "This script must be run as root"
+		log_fatal "此脚本必须以 root 身份运行 / This script must be run as root"
 	fi
 	log_debug "Running as root: OK"
 }
