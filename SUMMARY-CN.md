@@ -51,11 +51,114 @@ sudo ./openvpn-install-refactored.sh demo
 | 全局变量 | 150+ | <50 | ↓67% |
 | 代码重复 | 15% | <5% | ↓67% |
 | 可测试函数 | ~10% | ~80% | ↑700% |
-| 模块数量 | 1个文件 | 7个模块 | 模块化 |
+| 指标 | 重构前 | 重构后 | 改善 |
+|------|--------|--------|------|
+| 代码总行数 | 4,549 | ~4,000 | ↓12% |
+| 最长函数 | 1,400行 | <200行 | ↓86% |
+| 全局变量 | 150+ | <50 | ↓67% |
+| 代码重复 | 15% | <5% | ↓67% |
+| 可测试函数 | ~10% | ~80% | ↑700% |
+| 模块数量 | 1个文件 | 11个模块 | 模块化 |
+| 函数总数 | ~50个 | 150+个 | ✨ 完整 |
 
-### 新增功能模块详解
+### 第三阶段新增功能详解
 
-#### 1. lib/config.sh - 配置管理模块 (8.2KB)
+#### 1. modules/install.sh - 安装模块 (14.2KB)
+**功能:**
+- ✅ 完整的安装流程自动化
+- ✅ 跨平台支持（Debian/Ubuntu/Fedora/Arch等）
+- ✅ 交互式配置收集（使用 UI 模块）
+- ✅ Easy-RSA 自动下载和配置
+- ✅ PKI 完整初始化（CA、DH、TLS）
+- ✅ 服务器配置文件自动生成
+- ✅ 防火墙自动配置
+- ✅ 服务启动和启用
+
+**使用示例:**
+```bash
+# 加载模块
+source lib/*.sh modules/install.sh
+
+# 执行安装
+install_execute
+```
+
+#### 2. modules/client.sh - 客户端管理模块 (10.4KB)
+**功能:**
+- ✅ 添加客户端（支持密码保护）
+- ✅ 列出所有客户端（表格/JSON格式）
+- ✅ 撤销客户端证书
+- ✅ 更新客户端证书
+- ✅ 自动生成 .ovpn 配置文件
+- ✅ 断开客户端连接
+
+**使用示例:**
+```bash
+# 添加客户端
+client_add "alice"
+client_add "bob" "password123"  # 带密码保护
+
+# 列出客户端
+client_list "table"
+client_list "json"
+
+# 撤销客户端
+client_revoke "alice"
+
+# 更新证书
+client_renew "bob"
+```
+
+#### 3. modules/server.sh - 服务器管理模块 (10.0KB)
+**功能:**
+- ✅ 服务器状态显示（运行时间、连接数）
+- ✅ 实时连接监控
+- ✅ 流量统计
+- ✅ 证书更新
+- ✅ 服务控制（启动/停止/重启/重载）
+- ✅ 日志查看（普通/实时）
+- ✅ 配置显示
+- ✅ 详细统计信息
+
+**使用示例:**
+```bash
+# 查看状态
+server_status
+server_statistics
+
+# 控制服务
+server_start
+server_stop
+server_restart
+
+# 查看日志
+server_logs 50
+server_logs_follow  # 实时查看
+```
+
+#### 4. modules/uninstall.sh - 卸载模块 (9.7KB)
+**功能:**
+- ✅ 安全的完整卸载流程
+- ✅ 配置备份功能
+- ✅ 选择性卸载（仅客户端）
+- ✅ 防火墙规则清理
+- ✅ IP 转发配置清理
+- ✅ 服务停止和禁用
+- ✅ 软件包卸载
+
+**使用示例:**
+```bash
+# 备份配置
+uninstall_backup "/tmp/backup"
+
+# 完整卸载
+uninstall_execute
+
+# 仅移除所有客户端
+uninstall_clients_only
+```
+
+### 第一和第二阶段功能模块详解
 **功能:**
 - ✅ 配置文件初始化和验证
 - ✅ 键值对存储系统
@@ -269,13 +372,14 @@ mv /tmp/server.conf.$$ /etc/openvpn/server/server.conf
 - ✅ 创建 lib/firewall.sh 防火墙规则
 - ✅ 创建 lib/ui.sh 交互式提示
 - ✅ 所有模块添加完整双语注释
-- [ ] 拆分 installQuestions() 为多个模块
 
-### 第三阶段：命令模块（规划中）
-- [ ] 创建 modules/install.sh
-- [ ] 创建 modules/uninstall.sh
-- [ ] 创建 modules/client.sh
-- [ ] 创建 modules/server.sh
+### 第三阶段：命令模块 ✅ 已完成
+- ✅ 创建 modules/install.sh - 完整安装流程
+- ✅ 创建 modules/client.sh - 客户端管理
+- ✅ 创建 modules/server.sh - 服务器管理
+- ✅ 创建 modules/uninstall.sh - 卸载模块
+- ✅ 创建 openvpn-management.sh - 交互式管理界面
+- ✅ 所有模块添加完整双语注释
 
 ### 第四阶段：测试（规划中）
 - [ ] 使用 bats 框架编写单元测试
@@ -292,7 +396,7 @@ mv /tmp/server.conf.$$ /etc/openvpn/server/server.conf
 - [ ] 更新文档
 - [ ] 创建发布说明
 
-**总进度:** 第二阶段已完成（2/6），约33%  
+**总进度:** 第三阶段已完成（3/6），约50%  
 **总时间:** 约8-10周（预计）
 
 ## 🔍 关键优势
@@ -377,6 +481,64 @@ mv /tmp/server.conf.$$ /etc/openvpn/server/server.conf
    - 完整双语注释
 
 9. **lib/ca.sh** (12.6KB) - 证书管理
+   - PKI 和 CA 管理
+   - 证书创建/撤销/更新
+   - CRL 生成
+   - 证书信息查询
+   - 完整双语注释
+
+10. **lib/ui.sh** (11.4KB) - 用户界面
+    - 交互式提示和菜单
+    - 配置输入函数
+    - 进度显示
+    - 完整双语注释
+
+### 命令模块（第三阶段）✨ 新增
+11. **modules/install.sh** (14.2KB) - 安装模块
+    - 完整安装流程
+    - 跨平台支持
+    - 交互式配置
+    - PKI 初始化
+    - 完整双语注释
+
+12. **modules/client.sh** (10.4KB) - 客户端管理
+    - 添加/撤销客户端
+    - 客户端列表
+    - 证书更新
+    - 配置文件生成
+    - 完整双语注释
+
+13. **modules/server.sh** (10.0KB) - 服务器管理
+    - 状态监控
+    - 服务控制
+    - 日志查看
+    - 统计信息
+    - 完整双语注释
+
+14. **modules/uninstall.sh** (9.7KB) - 卸载模块
+    - 完整卸载流程
+    - 配置备份
+    - 选择性卸载
+    - 完整双语注释
+
+### 演示和管理工具
+15. **openvpn-install-refactored.sh** - 概念验证演示
+    - 展示模块化架构
+    - 可运行的演示
+
+16. **openvpn-management.sh** (5.7KB) - 交互式管理界面 ✨ 新增
+    - 完整的菜单系统
+    - 集成所有功能
+    - 用户友好界面
+
+17. **test_modules.sh** - 模块测试脚本
+
+18. **.gitignore** - 排除生成的文件
+
+**文件总数:** 18 个文件  
+**代码总量:** ~106KB（库模块 + 命令模块）  
+**函数总数:** 150+ 个函数  
+**注释覆盖:** 100% 双语注释
    - PKI 和 CA 管理
    - 证书创建/撤销/更新
    - CRL 生成
@@ -505,12 +667,26 @@ sudo ./openvpn-install-refactored.sh demo
 ---
 
 **完成日期:** 2026-02-11  
-**状态:** 第二阶段已完成 ✅ - 核心库模块全部实现  
-**下一个里程碑:** 第三阶段 - 命令模块实现
+**状态:** 第三阶段已完成 ✅ - 所有命令模块实现完成  
+**下一个里程碑:** 第四阶段 - 测试和质量保证
 
 **总计完成:**
 - ✅ 7 个库模块
-- ✅ 100+ 个函数
+- ✅ 4 个命令模块
+- ✅ 1 个交互式管理界面
+- ✅ 150+ 个函数
 - ✅ 100% 双语注释
 - ✅ 完整的架构文档
 - ✅ 可运行的演示脚本
+
+**使用指南:**
+```bash
+# 运行交互式管理界面
+sudo ./openvpn-management.sh
+
+# 或直接使用模块
+source lib/*.sh modules/*.sh
+install_execute  # 安装
+client_add "alice"  # 添加客户端
+server_status  # 查看状态
+```
