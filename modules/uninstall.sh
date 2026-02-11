@@ -133,9 +133,12 @@ uninstall_remove_files() {
 	log_info "移除配置文件和证书 / Removing configuration files and certificates"
 	
 	# OpenVPN 配置目录 / OpenVPN configuration directory
-	if [[ -d "/etc/openvpn" ]]; then
-		rm -rf /etc/openvpn
-		log_success "已移除 /etc/openvpn"
+	# 安全检查：确保路径不为空且为预期目录
+	# Safety check: Ensure path is not empty and is expected directory
+	local openvpn_dir="/etc/openvpn"
+	if [[ -d "$openvpn_dir" && "$openvpn_dir" == "/etc/openvpn" ]]; then
+		rm -rf "$openvpn_dir"
+		log_success "已移除 $openvpn_dir"
 	fi
 	
 	# 客户端配置文件 / Client configuration files

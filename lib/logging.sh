@@ -49,7 +49,7 @@ fi
 # 参数 / Args: $* - 日志消息 / log message
 _log_to_file() {
 	if [[ -n "$LOG_FILE" ]]; then
-		echo "$(date '+%Y-%m-%d %H:%M:%S') $*" >>"$LOG_FILE"
+		printf '%(%Y-%m-%d %H:%M:%S)T %s\n' -1 "$*" >>"$LOG_FILE"
 	fi
 }
 

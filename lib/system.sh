@@ -22,8 +22,10 @@ detect_os() {
 	
 	# 读取系统信息（不使用 source 以避免只读变量冲突）
 	# Read OS information without sourcing to avoid readonly variable conflicts
-	OS=$(grep -oP '(?<=^ID=).+' /etc/os-release | tr -d '"')
-	VER=$(grep -oP '(?<=^VERSION_ID=).+' /etc/os-release | tr -d '"' || echo "unknown")
+	# 使用 awk 代替 grep -P 提高可移植性 / Use awk instead of grep -P for better portability
+	OS=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
+	VER=$(awk -F= '/^VERSION_ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
+	VER=${VER:-unknown}
 	
 	log_debug "检测到操作系统 / Detected OS: $OS $VER"
 	
