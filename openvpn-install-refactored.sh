@@ -24,31 +24,35 @@ readonly SCRIPT_DIR
 readonly SCRIPT_NAME="openvpn-install-refactored"
 readonly VERSION="2.0.0-beta"
 
-# Configuration constants
-readonly DEFAULT_CERT_VALIDITY_DURATION_DAYS=3650 # 10 years
-readonly DEFAULT_CRL_VALIDITY_DURATION_DAYS=5475  # 15 years
+# =============================================================================
+# Configuration Constants / 配置常量
+# =============================================================================
+readonly DEFAULT_CERT_VALIDITY_DURATION_DAYS=3650 # 10 years / 10年
+readonly DEFAULT_CRL_VALIDITY_DURATION_DAYS=5475  # 15 years / 15年
 readonly EASYRSA_VERSION="3.2.5"
 readonly EASYRSA_SHA256="662ee3b453155aeb1dff7096ec052cd83176c460cfa82ac130ef8568ec4df490"
 
 # =============================================================================
-# Load Libraries
+# Load Libraries / 加载库文件
 # =============================================================================
 # Source library files in correct order (dependencies first)
+# 按正确顺序加载库文件（依赖项优先）
 source "${SCRIPT_DIR}/lib/logging.sh"
 source "${SCRIPT_DIR}/lib/validation.sh"
 source "${SCRIPT_DIR}/lib/system.sh"
 
 # Note: Other modules would be loaded here as they're created:
+# 注意：其他模块将在创建后在此处加载：
 # source "${SCRIPT_DIR}/lib/config.sh"
 # source "${SCRIPT_DIR}/lib/ca.sh"
 # source "${SCRIPT_DIR}/lib/firewall.sh"
 # source "${SCRIPT_DIR}/lib/ui.sh"
 
 # =============================================================================
-# Pre-flight Checks
+# Pre-flight Checks / 前置检查
 # =============================================================================
 pre_flight_checks() {
-	log_header "Pre-flight Checks"
+	log_header "Pre-flight Checks / 前置检查"
 	
 	# Check root privileges
 	check_root
@@ -64,51 +68,58 @@ pre_flight_checks() {
 	# Check systemd
 	check_systemd
 	
-	log_success "All pre-flight checks passed"
+	log_success "All pre-flight checks passed / 所有前置检查通过"
 }
 
 # =============================================================================
-# Help Text
+# Help Text / 帮助文本
 # =============================================================================
 show_help() {
 	cat <<-EOF
 		OpenVPN installer and manager (Refactored Architecture Demo)
-		Version: $VERSION
-
-		Usage: $SCRIPT_NAME <command> [options]
-
-		Commands:
-			install       Install and configure OpenVPN server
-			uninstall     Remove OpenVPN server
-			client        Manage client certificates
-			server        Server management
-			interactive   Launch interactive menu
-
-		Global Options:
-			--verbose     Show detailed output
-			--log <path>  Log file path (default: openvpn-install.log)
-			--no-log      Disable file logging
-			--no-color    Disable colored output
-			-h, --help    Show help
-
-		Run '$SCRIPT_NAME <command> --help' for command-specific help.
+		OpenVPN 安装和管理工具（重构架构演示）
+		Version / 版本: $VERSION
 		
-		NOTE: This is a proof-of-concept demonstrating modular architecture.
-		      Use the original openvpn-install.sh for production installs.
+		Usage / 用法: $SCRIPT_NAME <command> [options]
+		
+		Commands / 命令:
+			install       Install and configure OpenVPN server / 安装和配置 OpenVPN 服务器
+			uninstall     Remove OpenVPN server / 移除 OpenVPN 服务器
+			client        Manage client certificates / 管理客户端证书
+			server        Server management / 服务器管理
+			interactive   Launch interactive menu / 启动交互式菜单
+		
+		Global Options / 全局选项:
+			--verbose     Show detailed output / 显示详细输出
+			--log <path>  Log file path / 日志文件路径 (default / 默认: openvpn-install.log)
+			--no-log      Disable file logging / 禁用文件日志
+			--no-color    Disable colored output / 禁用彩色输出
+			-h, --help    Show help / 显示帮助
+		
+		Run / 运行 '$SCRIPT_NAME <command> --help' for command-specific help / 查看命令特定帮助.
+		
+		NOTE / 注意: This is a proof-of-concept demonstrating modular architecture.
+		             Use the original openvpn-install.sh for production installs.
+		             这是演示模块化架构的概念验证。
+		             生产环境请使用原始的 openvpn-install.sh。
 	EOF
 }
 
 # =============================================================================
-# Example Command: Install (Simplified Demo)
+# Example Command: Install (Simplified Demo) / 示例命令：安装（简化演示）
 # =============================================================================
 cmd_install() {
-	log_header "OpenVPN Installation"
+	log_header "OpenVPN Installation / OpenVPN 安装"
 	
 	# This is a simplified demonstration showing how modular functions would be called
 	# The actual implementation would be much more comprehensive
+	# 这是简化的演示，展示如何调用模块化函数
+	# 实际实现会更加全面
 	
 	log_info "This is a demonstration of the refactored architecture"
+	log_info "这是重构架构的演示"
 	log_info "The following shows how modular functions work together:"
+	log_info "以下展示模块化函数如何协同工作："
 	
 	# Example: Resolve public IP using the unified function
 	log_info ""
@@ -240,12 +251,12 @@ cmd_install() {
 }
 
 # =============================================================================
-# Example Command: Client Add (Simplified Demo)
+# Example Command: Client Add (Simplified Demo) / 示例命令：添加客户端（简化演示）
 # =============================================================================
 cmd_client_add() {
 	local client_name="$1"
 	
-	log_header "Add Client: $client_name"
+	log_header "Add Client / 添加客户端: $client_name"
 	
 	# Validate client name
 	if ! validate_client_name "$client_name"; then
@@ -262,10 +273,10 @@ cmd_client_add() {
 }
 
 # =============================================================================
-# Main Entry Point
+# Main Entry Point / 主入口点
 # =============================================================================
 main() {
-	# Parse global options
+	# Parse global options / 解析全局选项
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
 			--verbose)
